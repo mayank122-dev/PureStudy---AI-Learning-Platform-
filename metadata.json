@@ -1,0 +1,6 @@
+{
+  "name": "purestudy",
+  "description": "purestudy is a premium, AI-powered startup-quality educational platform for students to learn, practice, revise, plan, and solve academic doubts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

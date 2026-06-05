@@ -1,0 +1,220 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "Information and statistics unique to each student profile.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "username": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "grade": { "type": "string" },
+        "school": { "type": "string" },
+        "points": { "type": "number" },
+        "streak": { "type": "number" },
+        "badges": { "type": "array" },
+        "preferences": { "type": "object" },
+        "joinedDate": { "type": "string" },
+        "lastActiveDate": { "type": "string" },
+        "isAdmin": { "type": "boolean" }
+      },
+      "required": ["userId", "fullName", "username", "grade"]
+    },
+    "generatedNote": {
+      "title": "Generated Note",
+      "description": "An AI-generated summary and concept sheet created by the student.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "topic": { "type": "string" },
+        "subject": { "type": "string" },
+        "summary": { "type": "string" },
+        "keyConcepts": { "type": "array" },
+        "formulasOrDefinitions": { "type": "array" },
+        "quickSummaries": { "type": "array" },
+        "practiceQuestions": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "bookmarked": { "type": "boolean" }
+      },
+      "required": ["id", "title", "topic", "subject", "summary", "createdAt"]
+    },
+    "savedDoubt": {
+      "title": "Saved Doubt",
+      "description": "An academic doubt asked to the AI Solver and saved for review.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "subject": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "question", "answer", "subject", "createdAt"]
+    },
+    "plannerTask": {
+      "title": "Planner Task",
+      "description": "A scheduled academic task or assignment created by the student.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "subject": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "durationMinutes": { "type": "number" }
+      },
+      "required": ["id", "title", "type", "subject", "dueDate", "completed"]
+    },
+    "quiz": {
+      "title": "Platform Quiz",
+      "description": "A curriculum quiz available on the platform for students to take.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "questions": { "type": "array" },
+        "durationMinutes": { "type": "number" }
+      },
+      "required": ["id", "title", "subject", "difficulty", "questions", "durationMinutes"]
+    },
+    "quizAttempt": {
+      "title": "Quiz Attempt",
+      "description": "The result and metrics of a student's completed quiz attempt.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "quizId": { "type": "string" },
+        "quizTitle": { "type": "string" },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "timeSpentSeconds": { "type": "number" },
+        "attemptedAt": { "type": "string" },
+        "accuracy": { "type": "number" }
+      },
+      "required": ["id", "quizId", "quizTitle", "score", "totalQuestions", "attemptedAt"]
+    },
+    "dailyProgress": {
+      "title": "Daily Progress Log",
+      "description": "Logged statistics comparing study minutes and completed elements by date.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "studyMinutes": { "type": "number" },
+        "tasksCompleted": { "type": "number" },
+        "quizzesCompleted": { "type": "number" }
+      },
+      "required": ["date", "studyMinutes", "tasksCompleted", "quizzesCompleted"]
+    },
+    "formulaFavorite": {
+      "title": "Formula Favorite",
+      "description": "A tag indicating a student has favorited a specific library formula.",
+      "type": "object",
+      "properties": {
+        "formulaId": { "type": "string" },
+        "isFavorite": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["formulaId", "isFavorite"]
+    },
+    "notification": {
+      "title": "Platform Notification",
+      "description": "A notification broadcasted globally by administrators.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "type": { "type": "string" },
+        "readBy": { "type": "array" }
+      },
+      "required": ["id", "title", "message", "createdAt"]
+    },
+    "friendRequest": {
+      "title": "Friend Request",
+      "description": "A pending incoming friend request from another user.",
+      "type": "object",
+      "properties": {
+        "fromUserId": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["fromUserId", "status", "createdAt"]
+    },
+    "friend": {
+      "title": "Friend",
+      "description": "An accepted friend relation.",
+      "type": "object",
+      "properties": {
+        "friendId": { "type": "string" },
+        "addedAt": { "type": "string" }
+      },
+      "required": ["friendId", "addedAt"]
+    },
+    "usernameRegistry": {
+      "title": "Username Registry",
+      "description": "Global registry to enforce unique usernames across the platform.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/usernames/{username}": {
+      "schema": "usernameRegistry",
+      "description": "Registry of claims for usernames, ID is the actual lowercase username."
+    },
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "The root document of a user's account and profile data."
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": "generatedNote",
+      "description": "Subcollection containing the student's personal notes."
+    },
+    "/users/{userId}/doubts/{doubtId}": {
+      "schema": "savedDoubt",
+      "description": "Subcollection containing the student's resolved doubt chat items."
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "plannerTask",
+      "description": "Subcollection containing the student's personal planner study items."
+    },
+    "/users/{userId}/quizAttempts/{attemptId}": {
+      "schema": "quizAttempt",
+      "description": "Subcollection with details of past quizzes completed by this student."
+    },
+    "/users/{userId}/dailyProgress/{date}": {
+      "schema": "dailyProgress",
+      "description": "Historical logs tracking study metrics of the student on specific days."
+    },
+    "/users/{userId}/formulaFavorites/{formulaId}": {
+      "schema": "formulaFavorite",
+      "description": "Favorites tracking for science and mathematics formula library cards."
+    },
+    "/users/{userId}/friendRequests/{requesterId}": {
+      "schema": "friendRequest",
+      "description": "Subcollection tracking incoming friend requests to the user."
+    },
+    "/users/{userId}/friends/{friendId}": {
+      "schema": "friend",
+      "description": "Subcollection of accepted friends for the user."
+    },
+    "/quizzes/{quizId}": {
+      "schema": "quiz",
+      "description": "Global collection containing all academic quizzes on the platform."
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notification",
+      "description": "Global collection storing admin announcements and messages."
+    }
+  }
+}

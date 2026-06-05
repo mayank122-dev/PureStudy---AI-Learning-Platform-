@@ -1,0 +1,167 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default safety deny gates
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitive global auth validators
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "mayanksonkar122@gmail.com" || 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 200 &&
+             data.username is string && data.username.size() > 0 && data.username.size() <= 100 &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 320 &&
+             data.grade is string && data.grade.size() <= 50;
+    }
+
+    function isValidNote(data) {
+      return data.id is string && data.title is string && data.title.size() <= 300 &&
+             data.topic is string && data.subject is string &&
+             data.summary is string && data.createdAt is string;
+    }
+
+    function isValidDoubt(data) {
+      return data.id is string && data.question is string && data.answer is string &&
+             data.subject is string && data.createdAt is string;
+    }
+
+    function isValidTask(data) {
+      return data.id is string && data.title is string && data.title.size() <= 300 &&
+             data.type is string && data.subject is string &&
+             data.dueDate is string && data.completed is bool;
+    }
+
+    function isValidQuizAttempt(data) {
+      return data.id is string && data.quizId is string && data.quizTitle is string &&
+             data.score is number && data.score >= 0 && data.totalQuestions is number &&
+             data.attemptedAt is string && data.accuracy is number;
+    }
+
+    function isValidDailyProgress(data) {
+      return data.date is string && data.studyMinutes is number &&
+             data.tasksCompleted is number && data.quizzesCompleted is number;
+    }
+
+    function isValidFormulaFavorite(data) {
+      return data.formulaId is string && data.isFavorite is bool;
+    }
+
+    function isValidQuiz(data) {
+      return data.id is string && data.title is string && data.title.size() <= 300 &&
+             data.subject is string && data.difficulty is string &&
+             data.questions is list && data.durationMinutes is number;
+    }
+
+    function isValidNotification(data) {
+      return data.id is string && data.title is string && data.title.size() <= 300 &&
+             data.message is string && data.createdAt is string;
+    }
+
+    // --- Path matching rules ---
+
+    // 1. User Profiles
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUser(incoming()) && (incoming().isAdmin == false || isAdmin());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && 
+                    (incoming().isAdmin == existing().isAdmin || isAdmin());
+      allow delete: if isAdmin();
+
+      // Nested user-specific collections
+      match /notes/{noteId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidNote(incoming()) && isValidId(noteId);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidNote(incoming()) && isValidId(noteId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /doubts/{doubtId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidDoubt(incoming()) && isValidId(doubtId);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidDoubt(incoming()) && isValidId(doubtId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /tasks/{taskId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidTask(incoming()) && isValidId(taskId);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidTask(incoming()) && isValidId(taskId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /quizAttempts/{attemptId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidQuizAttempt(incoming()) && isValidId(attemptId);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidQuizAttempt(incoming()) && isValidId(attemptId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /dailyProgress/{date} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidDailyProgress(incoming()) && isValidId(date);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidDailyProgress(incoming()) && isValidId(date);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /formulaFavorites/{formulaId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidFormulaFavorite(incoming()) && isValidId(formulaId);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidFormulaFavorite(incoming()) && isValidId(formulaId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // 2. Global Quizzes Collection
+    match /quizzes/{quizId} {
+      allow get, list: if isSignedIn();
+      allow create: if isAdmin() && isValidQuiz(incoming()) && isValidId(quizId);
+      allow update: if isAdmin() && isValidQuiz(incoming()) && isValidId(quizId);
+      allow delete: if isAdmin();
+    }
+
+    // 3. Platform Announcements
+    match /notifications/{notificationId} {
+      allow get, list: if isSignedIn();
+      allow create: if isAdmin() && isValidNotification(incoming()) && isValidId(notificationId);
+      allow update: if isAdmin() && isValidNotification(incoming()) && isValidId(notificationId);
+      allow delete: if isAdmin();
+    }
+    
+    // 4. Secure explicit Admin collection
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

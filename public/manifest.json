@@ -1,0 +1,52 @@
+{
+  "name": "PureStudy - AI Academic Companion",
+  "short_name": "PureStudy",
+  "description": "An interactive, personalized companion for school and academy students world-wide, featuring AI doubts resolution, study revision note compilation, exam schedules, and performance trackers.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#7c3aed",
+  "background_color": "#0a0a0c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Ask AI Doubt",
+      "url": "/?view=doubts",
+      "description": "Solve doubt cards instantly using world-class AI"
+    },
+    {
+      "name": "Revision Notes",
+      "url": "/?view=notes",
+      "description": "Generate customized syllabus revision blueprints"
+    }
+  ]
+}

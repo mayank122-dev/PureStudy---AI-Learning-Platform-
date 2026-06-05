@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PureStudy</string>
+    <string name="title_activity_main">PureStudy</string>
+    <string name="package_name">com.purestudy.app</string>
+    <string name="custom_url_scheme">com.purestudy.app</string>
+</resources>
