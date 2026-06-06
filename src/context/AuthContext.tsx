@@ -24,7 +24,7 @@ interface AuthContextType {
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, details: { fullName: string; username: string; grade: string; school?: string; avatarUrl?: string; board?: string; classLevel?: string; medium?: string; }) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  loginGuest: () => void;
+  loginGuest: (details?: { board?: string; classLevel?: string; medium?: string; }) => void;
   logout: () => Promise<void>;
   passwordReset: (email: string) => Promise<void>;
   updateProfileDetails: (details: Partial<UserProfile>) => Promise<void>;
@@ -236,7 +236,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsGuest(false);
   };
 
-  const loginGuest = () => {
+  const loginGuest = (details?: { board?: string; classLevel?: string; medium?: string; }) => {
+    let existingProfile = null;
+    const saved = localStorage.getItem('STUDENT_HUB_PROFILE');
+    if (saved) {
+      try {
+        existingProfile = JSON.parse(saved);
+      } catch (e) {}
+    }
+
+    if (details) {
+      const defaultGuest: UserProfile = {
+        ...(existingProfile || {}),
+        uid: 'guest-user',
+        fullName: existingProfile?.fullName || 'Guest Student',
+        username: existingProfile?.username || 'Guest',
+        avatarUrl: existingProfile?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120',
+        grade: details.classLevel || existingProfile?.grade || '10',
+        board: details.board || existingProfile?.board || 'CBSE',
+        classLevel: details.classLevel || existingProfile?.classLevel || '10',
+        medium: details.medium || existingProfile?.medium || 'English Medium',
+        school: existingProfile?.school || 'Guest Academy',
+        points: existingProfile?.points || 0,
+        streak: existingProfile?.streak || 0,
+        studyMinutesTotal: existingProfile?.studyMinutesTotal || 0,
+        quizzesCompletedTotal: existingProfile?.quizzesCompletedTotal || 0,
+        preferences: existingProfile?.preferences || {
+          theme: 'light',
+          favoriteSubject: 'Physics',
+          dailyGoalMinutes: 45
+        }
+      };
+      setProfile(defaultGuest);
+      localStorage.setItem('STUDENT_HUB_PROFILE', JSON.stringify(defaultGuest));
+    }
     setIsGuest(true);
     localStorage.setItem('STUDENT_HUB_AUTH_MODE', 'guest');
   };

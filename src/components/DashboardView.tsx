@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { 
   Flame, Clock, Trophy, BookOpen, Award, CheckCircle2, 
   ChevronRight, Check, Sparkles, FileText, Calendar, 
-  TrendingUp, Zap, Target, Crown
+  TrendingUp, Zap, Target, Crown, Calculator
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ALL_BADGES } from '../data';
@@ -42,6 +42,7 @@ export default function DashboardView({
     : 0;
 
   const quickActions = [
+    { id: 'formula', label: 'Formula Library', icon: Calculator, color: 'from-pink-500 to-rose-500', shadow: 'shadow-pink-500/30' },
     { id: 'doubt', label: 'AI Doubt Solver', icon: Sparkles, color: 'from-violet-500 to-fuchsia-500', shadow: 'shadow-violet-500/30' },
     { id: 'quizzes', label: 'Daily Quiz', icon: Zap, color: 'from-amber-400 to-orange-500', shadow: 'shadow-orange-500/30' },
     { id: 'focus', label: 'Pomodoro Timer', icon: Clock, color: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/30' },
@@ -199,6 +200,23 @@ export default function DashboardView({
           <div className="relative z-10">
             <span className="text-5xl font-black block leading-none">{totalAccuracy}%</span>
             <span className="text-gray-200 text-sm font-medium mt-1 block">in quizzes</span>
+          </div>
+        </div>
+
+        {/* Formulas Card */}
+        <div className="snap-start shrink-0 w-64 bg-gradient-to-br from-pink-500 to-rose-500 p-5 rounded-3xl text-white shadow-xl shadow-pink-500/20 relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 opacity-30">
+            <Calculator strokeWidth={1} className="w-32 h-32" />
+          </div>
+          <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-sm tracking-wide">Formulas Viewed</span>
+          </div>
+          <div className="relative z-10">
+            <span className="text-5xl font-black block leading-none">{profile?.formulasViewed || 0}</span>
+            <span className="text-gray-200 text-sm font-medium mt-1 block">formulas</span>
           </div>
         </div>
 

@@ -17,48 +17,56 @@ export default function BoardResourcesView({ onShowToast }: BoardResourcesViewPr
     const fetchBoardData = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-             question: `Generate a brief study overview and syllabus summary for ${profile?.board || 'CBSE'} Class ${profile?.classLevel || '10'} students. Create it using Markdown. Structure: 1. Board Overview. 2. Key Subjects. 3. Exam Pattern summary. 4. Important Tips. Keep it under 300 words.`,
-             subject: 'Board Information',
-             board: profile?.board,
-             classLevel: profile?.classLevel,
-             medium: profile?.medium
-          })
-        });
+        // Create static content to avoid unnecessary Gemini API calls
+        const targetBoard = profile?.board || 'CBSE';
+        const targetClass = profile?.classLevel || '10';
+        const targetMedium = profile?.medium || 'English Medium';
         
-        if (!res.ok) {
-           const contentType = res.headers.get("content-type");
-           if (contentType && contentType.includes("application/json")) {
-             const errData = await res.json();
-             throw new Error(errData.error || "Failed to load");
-           }
-           throw new Error("Failed to load");
+        let subjects = '';
+        if (parseInt(targetClass) <= 8) {
+           subjects = "Mathematics, Science, English, Social Science, Language II";
+        } else if (parseInt(targetClass) <= 10) {
+           subjects = "Mathematics, Science, English, Social Science, Hindi/Local Language";
+        } else {
+           subjects = "Physics, Chemistry, Mathematics/Biology, English, Optional (CS/PE)";
         }
-        let data;
-        try {
-           data = await res.json();
-        } catch (parseErr) {
-           throw new Error("Received an invalid response from the server. Please try again.");
-        }
+
+        const staticMarkdown = `# ${targetBoard} - Class ${targetClass} (${targetMedium})
+
+## 1. Board Overview
+The ${targetBoard} syllabus is designed to provide holistic education while focusing on core academic and practical skills. It follows standard curriculum guidelines for Class ${targetClass} students.
+
+## 2. Key Subjects
+**Core Subjects:** ${subjects}
+
+## 3. Exam Pattern Summary
+* **Formative/Internal Assessments:** ~20% weightage. Continuous evaluation via unit tests, practicals, and projects.
+* **Summative/Board Exams:** ~80% weightage. Final written examinations covering the entire year's syllabus.
+
+## 4. Important Tips
+* **Consistency:** Review notes daily.
+* **Practice:** Solve previous year question papers regularly.
+* **Clarity:** Focus on understanding concepts rather than rote learning.
+* **Time Management:** Plan a strict revision schedule at least 2 months before exams.`;
         
         if (mounted) {
-           setBoardData(data.answer);
+           // Simulate slight network delay for UI smoothness
+           setTimeout(() => {
+             if (mounted) setBoardData(staticMarkdown);
+             if (mounted) setLoading(false);
+           }, 500);
         }
       } catch (err: any) {
         if (mounted) {
-          setBoardData(`**Error loading ${profile?.board} Class ${profile?.classLevel} information.**\nPlease check your Gemini API key and try again.\n\n` + err?.message);
+          setBoardData(`**Error loading ${profile?.board} Class ${profile?.classLevel} information.**\nPlease check your settings and try again.\n\n` + err?.message);
+          setLoading(false);
         }
-      } finally {
-        if (mounted) setLoading(false);
       }
     };
     
     fetchBoardData();
     return () => { mounted = false; };
-  }, [profile?.board, profile?.classLevel]);
+  }, [profile?.board, profile?.classLevel, profile?.medium]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20 pt-2 animate-in fade-in">

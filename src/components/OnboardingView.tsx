@@ -28,7 +28,7 @@ export default function OnboardingView() {
     loginWithEmail, signUpWithEmail, signInWithGoogle, loginGuest, passwordReset 
   } = useAuth();
 
-  const [mode, setMode] = useState<'welcome' | 'register' | 'login' | 'forgot'>('welcome');
+  const [mode, setMode] = useState<'welcome' | 'register' | 'login' | 'forgot' | 'guest_setup'>('welcome');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -140,6 +140,7 @@ export default function OnboardingView() {
               {mode === 'register' && "Create an Account"}
               {mode === 'login' && "Welcome Back"}
               {mode === 'forgot' && "Reset Password"}
+              {mode === 'guest_setup' && "Let's Personalize"}
             </h1>
             
             <p className="text-sm text-slate-400 font-medium px-4">
@@ -147,6 +148,7 @@ export default function OnboardingView() {
               {mode === 'register' && "Fill out the details below to join the academy."}
               {mode === 'login' && "Sign in to pick up where you left off."}
               {mode === 'forgot' && "Enter your email and we'll send a link to reset your password."}
+              {mode === 'guest_setup' && "Tell us a bit about your studies so we can customize your experience."}
             </p>
           </div>
 
@@ -195,7 +197,7 @@ export default function OnboardingView() {
 
               <div className="text-center pt-8">
                  <button
-                   onClick={loginGuest}
+                   onClick={() => setMode('guest_setup')}
                    className="text-[12px] text-slate-500 font-bold uppercase tracking-widest hover:text-slate-300"
                  >
                    Explore as Guest
@@ -430,6 +432,75 @@ export default function OnboardingView() {
                 {isLoading ? 'Sending Link...' : 'Send Reset Link'}
               </button>
             </form>
+          )}
+
+          {/* GUEST SETUP FORM */}
+          {mode === 'guest_setup' && (
+            <div className="space-y-5">
+              <div className="bg-white/5 border border-white/10 rounded-[28px] p-5 space-y-4">
+                 <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-500 pl-2">Board</label>
+                       <select 
+                         value={board}
+                         onChange={e => {
+                           setBoard(e.target.value);
+                           setMedium(BOARD_MEDIUMS[e.target.value]?.[0] || 'English Medium');
+                         }}
+                         className="w-full px-4 py-3 bg-black/40 border border-white/5 rounded-2xl focus:border-indigo-500 focus:bg-indigo-500/5 text-sm font-semibold outline-none transition-colors text-white appearance-none"
+                       >
+                         <option className="bg-[#12121a]" value="CBSE">CBSE</option>
+                         <option className="bg-[#12121a]" value="ICSE">ICSE</option>
+                         <option className="bg-[#12121a]" value="GSEB">GSEB</option>
+                         <option className="bg-[#12121a]" value="Maharashtra Board">Maharashtra Board</option>
+                         <option className="bg-[#12121a]" value="UP Board">UP Board</option>
+                         <option className="bg-[#12121a]" value="Bihar Board">Bihar Board</option>
+                         <option className="bg-[#12121a]" value="Rajasthan Board">Rajasthan Board</option>
+                         <option className="bg-[#12121a]" value="MP Board">MP Board</option>
+                         <option className="bg-[#12121a]" value="Tamil Nadu Board">Tamil Nadu Board</option>
+                         <option className="bg-[#12121a]" value="Karnataka Board">Karnataka Board</option>
+                         <option className="bg-[#12121a]" value="Telangana Board">Telangana</option>
+                         <option className="bg-[#12121a]" value="Andhra Pradesh Board">Andhra Pradesh</option>
+                         <option className="bg-[#12121a]" value="Punjab Board">Punjab</option>
+                         <option className="bg-[#12121a]" value="Haryana Board">Haryana</option>
+                         <option className="bg-[#12121a]" value="West Bengal Board">West Bengal</option>
+                       </select>
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-500 pl-2">Class</label>
+                       <select 
+                         value={classLevel}
+                         onChange={e => setClassLevel(e.target.value)}
+                         className="w-full px-4 py-3 bg-black/40 border border-white/5 rounded-2xl focus:border-indigo-500 focus:bg-indigo-500/5 text-sm font-semibold outline-none transition-colors text-white appearance-none"
+                       >
+                         {[...Array(12)].map((_, i) => (
+                           <option key={i+1} className="bg-[#12121a]" value={`${i+1}`}>Class {i+1}</option>
+                         ))}
+                       </select>
+                    </div>
+                 </div>
+
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-500 pl-2">Medium</label>
+                    <select 
+                      value={medium}
+                      onChange={e => setMedium(e.target.value)}
+                      className="w-full px-4 py-3 bg-black/40 border border-white/5 rounded-2xl focus:border-indigo-500 focus:bg-indigo-500/5 text-sm font-semibold outline-none transition-colors text-white appearance-none"
+                    >
+                      {(BOARD_MEDIUMS[board] || ['English Medium']).map((med) => (
+                        <option key={med} className="bg-[#12121a]" value={med}>{med}</option>
+                      ))}
+                    </select>
+                 </div>
+              </div>
+
+              <button 
+                onClick={() => loginGuest({ board, classLevel, medium })}
+                className="w-full py-4 bg-indigo-600 text-white font-black rounded-full text-[15px] transition-transform hover:-translate-y-0.5 shadow-lg shadow-indigo-600/20"
+              >
+                Start Exploring
+              </button>
+            </div>
           )}
 
         </div>

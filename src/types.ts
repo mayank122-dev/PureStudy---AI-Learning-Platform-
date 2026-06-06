@@ -18,6 +18,9 @@ export interface UserProfile {
   activityHistory?: string[];
   studyMinutesTotal?: number;
   quizzesCompletedTotal?: number;
+  formulasViewed?: number;
+  formulaQuizAccuracy?: number;
+  formulaRevisionProgress?: number;
   bio?: string;
   preferences: {
     theme: 'dark' | 'light';
@@ -131,13 +134,18 @@ export interface Formula {
   title: string;
   formula: string;
   readableFormula?: string;
-  category: string; // e.g., 'Algebra', 'Trigonometry', 'Physics formulas', 'Chemistry formulas'
-  subject: 'Mathematics' | 'Science';
+  category: string;
+  subject: string; // Expanded subject string (e.g., Physics, Chemistry)
+  chapter?: string;
   description: string;
   isFavorite: boolean;
-  variables?: { symbol: string; meaning: string }[];
+  variables?: { symbol: string; meaning: string; unit?: string }[];
+  targetClasses?: number[]; // Classes where this formula is highly relevant
+  importanceTags?: string[]; // E.g., ['🔥 Most Important', '📘 NCERT Essential']
   simplifiedExplanation?: string;
   exampleProblem?: { scenario: string; calc: string; answer: string };
+  commonMistakes?: string;
+  examTip?: string;
 }
 
 export interface NotificationItem {

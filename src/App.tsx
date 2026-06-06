@@ -525,6 +525,14 @@ export default function App() {
           />
         )}
 
+        {currentView === 'formula' && (
+          <FormulaLibraryView
+            favoriteFormulaIds={favoriteFormulaIds}
+            onToggleFavoriteFormula={handleToggleFavoriteFormula}
+            trackMinutesStudied={trackMinutesStudied}
+          />
+        )}
+
         {currentView === 'board' && (
           <BoardResourcesView
             onShowToast={showToast}

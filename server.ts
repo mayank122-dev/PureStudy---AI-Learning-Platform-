@@ -36,7 +36,7 @@ function getAiClient(): GoogleGenAI | null {
 
 // Resilient wrapper for calling generateContent with exponential backoff retries for transient 503 errors
 async function generateContentWithRetry(aiClient: GoogleGenAI, params: any, retries = 3, initialDelay = 1000): Promise<any> {
-  const modelsToTry = [params.model, "gemini-3.5-flash", "gemini-3.1-pro-preview"].filter((v, i, a) => a.indexOf(v) === i);
+  const modelsToTry = [params.model, "gemini-2.0-flash-exp", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"].filter((v, i, a) => a.indexOf(v) === i);
   let lastError: any = null;
 
   for (const currentModel of modelsToTry) {
@@ -105,6 +105,12 @@ app.post("/api/chat", async (req, res) => {
       return res.status(400).json({ error: "Question is required." });
     }
 
+    // Implement Aggressive Caching
+    const cacheKey = `chat_${board}_${classLevel}_${medium}_${subject}_${question}_${JSON.stringify(history)}`;
+    if (cache.has(cacheKey)) {
+      return res.json({ answer: cache.get(cacheKey) });
+    }
+
     const aiClient = getAiClient();
     if (!aiClient) {
       return res.status(503).json({
@@ -135,7 +141,7 @@ Format the output beautifully in clean Markdown with rich headers. Keep your exp
     contents.push({ role: 'user', parts: [{ text: question }] });
 
     const response = await generateContentWithRetry(aiClient, {
-      model: "gemini-3.5-flash",
+      model: "gemini-2.0-flash",
       contents: contents,
       config: {
         systemInstruction: systemInstruction,
@@ -143,7 +149,10 @@ Format the output beautifully in clean Markdown with rich headers. Keep your exp
       },
     });
 
-    res.json({ answer: response.text });
+    const answer = response.text;
+    cache.set(cacheKey, answer);
+
+    res.json({ answer });
   } catch (error: any) {
     console.error("AI Chat Error:", error);
     res.status(500).json({ error: error?.message || "Failed to generate AI response." });
@@ -158,6 +167,12 @@ app.post("/api/generate-notes", async (req, res) => {
       return res.status(400).json({ error: "Topic is required." });
     }
 
+    const targetLang = language || "English";
+    const cacheKey = `notes_${board}_${classLevel}_${medium}_${targetLang}_${subject}_${topic}`;
+    if (cache.has(cacheKey)) {
+      return res.json(cache.get(cacheKey));
+    }
+
     const aiClient = getAiClient();
     if (!aiClient) {
       return res.status(503).json({
@@ -165,7 +180,6 @@ app.post("/api/generate-notes", async (req, res) => {
       });
     }
 
-    const targetLang = language || "English";
     const isHindi = targetLang.toLowerCase().includes("hindi");
     const langInstruction = isHindi
       ? `CRITICAL REQUIREMENT: The notes, title, summaries, definitions, concepts, key takeaways, questions and answers MUST be written in clean, grammatically correct and standard Hindi (using Devanagari script), keeping essential English technical terms in brackets next to their Hindi translation for high school academic clarity (e.g., "गुरुत्वाकर्षण (Gravity)" or "संवेग (Momentum)").`
@@ -216,7 +230,7 @@ Your output MUST be structured as a valid JSON object with the following schema:
 Ensure your response is valid JSON only. Respond with nothing else.`;
 
     const response = await generateContentWithRetry(aiClient, {
-      model: "gemini-3.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -227,9 +241,10 @@ Ensure your response is valid JSON only. Respond with nothing else.`;
     const text = response.text || "{}";
     try {
       const parsedData = JSON.parse(text);
+      cache.set(cacheKey, parsedData);
       res.json(parsedData);
     } catch (parseErr) {
-      res.json({
+      const fallbackData = {
         title: `${topic} Notes`,
         topic,
         subject,
@@ -239,7 +254,9 @@ Ensure your response is valid JSON only. Respond with nothing else.`;
         formulasOrDefinitions: [],
         quickSummaries: ["Please refer to key concepts section."],
         practiceQuestions: []
-      });
+      };
+      cache.set(cacheKey, fallbackData);
+      res.json(fallbackData);
     }
   } catch (error: any) {
     console.error("Notes Generator Error:", error);
@@ -249,10 +266,6 @@ Ensure your response is valid JSON only. Respond with nothing else.`;
 
 app.post("/api/quiz/generate", express.json(), async (req, res) => {
   try {
-    const aiClient = getAiClient();
-    if (!aiClient) {
-      return res.status(503).json({ error: "Gemini API key is not configured on the server." });
-    }
     const { subject, chapter, difficulty, language, type, count = 10, board, classLevel, medium } = req.body;
     
     // Default config values
@@ -261,6 +274,17 @@ app.post("/api/quiz/generate", express.json(), async (req, res) => {
     const quizChapter = chapter ? chapter.trim() : null;
     const quizDiff = difficulty || "Medium";
     const numQuestions = Math.min(Math.max(count, 5), 50); // between 5 and 50
+
+    // Check Cache
+    const cacheKey = `quiz_${board}_${classLevel}_${medium}_${targetLang}_${quizSubj}_${quizChapter}_${quizDiff}_${numQuestions}_${type}`;
+    if (cache.has(cacheKey)) {
+      return res.json(cache.get(cacheKey));
+    }
+
+    const aiClient = getAiClient();
+    if (!aiClient) {
+      return res.status(503).json({ error: "Gemini API key is not configured on the server." });
+    }
 
     let topicInstructions = `Subject: ${quizSubj}`;
     if (quizChapter) {
@@ -302,7 +326,7 @@ Format the output strictly as a JSON object matching this schema:
 Ensure your response is valid JSON only. Respond with nothing else.`;
 
     const response = await generateContentWithRetry(aiClient, {
-      model: "gemini-3.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -313,6 +337,7 @@ Ensure your response is valid JSON only. Respond with nothing else.`;
     const text = response.text || "{}";
     try {
       const parsedData = JSON.parse(text);
+      cache.set(cacheKey, parsedData);
       res.json(parsedData);
     } catch (parseErr) {
       res.status(500).json({ error: "Failed to parse generated quiz structure." });
@@ -323,8 +348,113 @@ Ensure your response is valid JSON only. Respond with nothing else.`;
   }
 });
 
+import { localFormulas } from './src/formulaData';
+
+// Caching layer to reduce Gemini API calls
+const cache = new Map<string, any>();
+
 // Configure Vite middleware or static serving
 async function setupServer() {
+// --- AI FORMULA LIBRARY ---
+app.post("/api/formulas/library", express.json(), async (req, res) => {
+  try {
+    const { board, classLevel, medium } = req.body;
+    let fallbackClass = parseInt(typeof classLevel === 'string' ? classLevel.replace(/[^0-9]/g, '') : classLevel) || 10;
+    
+    // Filter using targetClasses if available, else fallback logic
+    let filteredFormulas = localFormulas.filter(f => {
+      if (f.targetClasses && f.targetClasses.length > 0) {
+        return f.targetClasses.includes(fallbackClass);
+      }
+      return true; // Return all if no targetClasses specified
+    });
+
+    // Serve from local database instead of AI to minimize Gemini API calls
+    res.json(filteredFormulas);
+  } catch (error: any) {
+    console.error("Formula Library API Error:", error);
+    res.status(500).json({ error: error?.message || "Failed to load formulas." });
+  }
+});
+
+app.post("/api/formulas/explain", express.json(), async (req, res) => {
+  try {
+    const { formula, title, board, classLevel, medium } = req.body;
+    
+    const cacheKey = `explain_${formula}_${title}_${board}_${classLevel}_${medium}`;
+    if (cache.has(cacheKey)) {
+      return res.json({ explanation: cache.get(cacheKey) });
+    }
+
+    const aiClient = getAiClient();
+    if (!aiClient) {
+      return res.status(500).json({ error: "Gemini API key is missing or invalid." });
+    }
+    const prompt = `You are a helpful AI tutor for a student in ${board} Board, Class ${classLevel}, Medium: ${medium}.
+Explain the following formula clearly and engagingly in their preferred language medium:
+Formula Name: ${title}
+Expression: ${formula}
+
+Explain:
+1. What it means.
+2. When to use it.
+3. How to use it.
+4. Common mistakes to avoid.
+5. A quick exam tip.
+
+Return your response as Markdown text.`;
+
+    const response = await generateContentWithRetry(aiClient, {
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
+    
+    const explanation = response.text;
+    cache.set(cacheKey, explanation);
+    res.json({ explanation });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to explain formula." });
+  }
+});
+
+app.post("/api/formulas/solve", express.json(), async (req, res) => {
+  try {
+    const { formula, title, values } = req.body;
+    
+    const cacheKey = `solve_${formula}_${title}_${JSON.stringify(values)}`;
+    if (cache.has(cacheKey)) {
+      return res.json(cache.get(cacheKey));
+    }
+
+    const aiClient = getAiClient();
+    if (!aiClient) {
+      return res.status(500).json({ error: "Gemini API key is missing or invalid." });
+    }
+    const prompt = `You are a math/physics solver.
+Formula: ${title} (${formula})
+Provided Values: ${JSON.stringify(values)}
+
+Calculate the final result. Provide step-by-step calculation.
+Return a valid JSON object:
+{
+  "steps": "Step 1: ...\nStep 2: ...",
+  "result": "Final numerical or symbolic result"
+}`;
+
+    const response = await generateContentWithRetry(aiClient, {
+      model: "gemini-2.0-flash",
+      contents: prompt,
+      config: { responseMimeType: "application/json" }
+    });
+    
+    const parsedSolve = JSON.parse(response.text || "{}");
+    cache.set(cacheKey, parsedSolve);
+    res.json(parsedSolve);
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to solve formula." });
+  }
+});
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
