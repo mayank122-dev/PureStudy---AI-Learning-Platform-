@@ -3,6 +3,7 @@ import {
   Sparkles, GraduationCap, Trophy, Calendar, FileText, Zap, Compass, User, 
   Flame, Bell, Sun, Moon, LogIn, Menu, X, Landmark, RefreshCw, ShieldCheck, Home, Search, Target, ArrowLeft
 } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Subcomponents
 import HomeView from './components/HomeView';
@@ -622,6 +623,8 @@ export default function App() {
         </div>
       )}
 
+      {/* Vercel Speed Insights */}
+      <SpeedInsights />
     </div>
   );
 }
