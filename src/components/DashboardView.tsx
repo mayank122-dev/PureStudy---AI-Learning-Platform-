@@ -44,6 +44,7 @@ export default function DashboardView({
   const quickActions = [
     { id: 'doubt', label: 'AI Doubt Solver', icon: Sparkles, color: 'from-violet-500 to-fuchsia-500', shadow: 'shadow-violet-500/30' },
     { id: 'quizzes', label: 'Daily Quiz', icon: Zap, color: 'from-amber-400 to-orange-500', shadow: 'shadow-orange-500/30' },
+    { id: 'focus', label: 'Pomodoro Timer', icon: Clock, color: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/30' },
     { id: 'board', label: 'Board Resources', icon: BookOpen, color: 'from-blue-500 to-indigo-500', shadow: 'shadow-blue-500/30' },
     { id: 'notes', label: 'Create Note', icon: FileText, color: 'from-indigo-500 to-cyan-500', shadow: 'shadow-indigo-500/30' }
   ];

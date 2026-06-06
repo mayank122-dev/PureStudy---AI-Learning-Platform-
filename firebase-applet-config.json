@@ -1,10 +1,10 @@
 {
-  "projectId": "pristine-carver-3sjh2",
-  "appId": "1:80201874969:web:d27efc906cb2107fcbf488",
-  "apiKey": "AIzaSyBo3bnA5rf69k1noKxASjdr8gOtyoQi-NY",
-  "authDomain": "pristine-carver-3sjh2.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-f5aa51fc-7324-497d-a061-13ff5f075438",
-  "storageBucket": "pristine-carver-3sjh2.firebasestorage.app",
-  "messagingSenderId": "80201874969",
+  "projectId": "purestudy-9e29f",
+  "appId": "1:1017436265183:web:e1d2b48397b039ab97676a",
+  "apiKey": "AIzaSyDnpPhY0Y9vk2lLPjtTKpMON4SFwF9sw9g",
+  "authDomain": "purestudy-9e29f.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "purestudy-9e29f.firebasestorage.app",
+  "messagingSenderId": "1017436265183",
   "measurementId": ""
 }
